@@ -1,7 +1,7 @@
-//
-//  HomeScreen.tsx
-//  
-//
-//  Created by Simone on 08/05/26.
-//
-
+export default function HomeScreen() {
+    return (
+            <View>
+                <Text></Text>
+            </View>
+            );
+}
