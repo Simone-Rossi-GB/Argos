@@ -1,0 +1,147 @@
+# =========================
+# ARGOS - Monorepo .gitignore
+# =========================
+
+# -------------------------
+# OS / Editor
+# -------------------------
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------
+# Logs
+# -------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -------------------------
+# Environment files
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# -------------------------
+# Node.js / Next.js
+# -------------------------
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+
+*.tsbuildinfo
+
+# Turborepo / pnpm
+.pnpm-store/
+.turbo/
+
+# -------------------------
+# React Native
+# -------------------------
+android/.gradle/
+android/app/build/
+android/build/
+
+ios/build/
+ios/Pods/
+*.xcworkspace
+
+# Metro
+.expo/
+.expo-shared/
+
+# -------------------------
+# Python / FastAPI
+# -------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+
+.venv/
+venv/
+env/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# FastAPI temp
+instance/
+
+# -------------------------
+# Database
+# -------------------------
+*.sqlite3
+*.db
+
+postgres-data/
+
+# -------------------------
+# Docker
+# -------------------------
+docker-data/
+volumes/
+
+# -------------------------
+# Media / Streams
+# -------------------------
+streams/
+recordings/
+clips/
+uploads/
+snapshots/
+media/
+
+*.m3u8
+*.ts
+
+# -------------------------
+# MQTT / MediaMTX
+# -------------------------
+mosquitto/data/
+mosquitto/log/
+
+# MediaMTX cache/temp
+mediamtx.yml.bak
+
+# -------------------------
+# Secrets / Keys
+# -------------------------
+*.pem
+*.key
+*.crt
+*.p12
+
+# Tailscale auth keys
+tailscale-authkey.txt
+
+# -------------------------
+# Build artifacts
+# -------------------------
+*.apk
+*.aab
+*.ipa
+
+# -------------------------
+# Testing
+# -------------------------
+coverage/
+htmlcov/
+
+# -------------------------
+# Misc
+# -------------------------
+tmp/
+temp/
+.cache/
