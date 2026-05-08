@@ -1,7 +1,7 @@
-//
-//  SettingScreen.tsx
-//  
-//
-//  Created by Simone on 08/05/26.
-//
-
+export default function SettingScreen() {
+    return (
+            <View>
+                <Text></Text>
+            </View>
+            );
+}
