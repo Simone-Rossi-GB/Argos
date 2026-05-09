@@ -16,7 +16,7 @@ Le telecamere trasmettono video **solo on-demand**: quando l'AI rileva un evento
 | Persona | Ruolo | Stack |
 |---|---|---|
 | Wang | Backend + DB | Python/FastAPI, PostgreSQL, MQTT |
-| Busi & Viola | Frontend dashboard | Next.js, Mapbox, shadcn/ui |
+| Busi & Viola, ovvero auraman| Frontend dashboard | Next.js, Mapbox, shadcn/ui |
 | Rossi | Edge + Infra | React Native, MediaPipe, Docker |
 
 ---
