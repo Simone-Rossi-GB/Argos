@@ -4,7 +4,7 @@ from app.schemas.event import EventCreate, EventRead, MediaClipRead
 from app.schemas.alert import AlertCreate, AlertRead, AlertUpdate
 
 __all__ = [
-    "UserRead",
+    "UserCreate", "UserLogin", "TokenResponse", "UserRead",
     "CameraCreate", "CameraUpdate", "CameraRead", "CameraStatus",
     "EventCreate", "EventRead", "MediaClipRead",
     "AlertCreate", "AlertRead", "AlertUpdate",

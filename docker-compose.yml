@@ -23,7 +23,6 @@ services:
         depends_on:
             - db
             - mqtt
-            - server
     
     db:
         image: postgres:16
@@ -60,111 +59,6 @@ services:
         ports:
             - "8888:8888"
             - "1935:1935"
-
-    # ── Authentik ─────────────────────────
-    postgresql:
-        image: docker.io/library/postgres:16-alpine
-        container_name: argos-auth-db
-        restart: unless-stopped
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-            start_period: 20s
-            interval: 30s
-            retries: 5
-            timeout: 5s
-        volumes:
-            - auth-db:/var/lib/postgresql/data
-        environment:
-            POSTGRES_PASSWORD: ${PG_PASS:?database password required}
-            POSTGRES_USER: ${PG_USER:-authentik}
-            POSTGRES_DB: ${PG_DB:-authentik}
-        networks:
-            - argos-network
-
-    redis:
-        image: docker.io/library/redis:alpine
-        container_name: argos-auth-redis
-        command: --save 60 1 --loglevel warning
-        restart: unless-stopped
-        healthcheck:
-            test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-            start_period: 20s
-            interval: 30s
-            retries: 5
-            timeout: 3s
-        volumes:
-            - auth-redis:/data
-        networks:
-            - argos-network
-
-    server:
-        image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.12.1}
-        container_name: argos-auth-server
-        restart: unless-stopped
-        command: server
-        environment:
-            AUTHENTIK_REDIS__HOST: redis
-            AUTHENTIK_POSTGRESQL__HOST: postgresql
-            AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-            AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-            AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
-            AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
-            AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
-            AUTHENTIK_EMAIL__HOST: ""
-            AUTHENTIK_EMAIL__PORT: "587"
-            AUTHENTIK_EMAIL__USERNAME: ""
-            AUTHENTIK_EMAIL__PASSWORD: ""
-            AUTHENTIK_EMAIL__USE_TLS: "false"
-            AUTHENTIK_EMAIL__USE_SSL: "false"
-            AUTHENTIK_EMAIL__FROM: ""
-        volumes:
-            - ./authentik/media:/media
-            - ./authentik/custom-templates:/templates
-        ports:
-            - "127.0.0.1:9000:9000"   # dashboard Authentik, solo locale
-        depends_on:
-            postgresql:
-                condition: service_healthy
-            redis:
-                condition: service_healthy
-        networks:
-            - argos-network
-
-    worker:
-        image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.12.1}
-        container_name: argos-auth-worker
-        restart: unless-stopped
-        command: worker
-        environment:
-            AUTHENTIK_REDIS__HOST: redis
-            AUTHENTIK_POSTGRESQL__HOST: postgresql
-            AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-            AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-            AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
-            AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
-            AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
-            AUTHENTIK_EMAIL__HOST: ""
-            AUTHENTIK_EMAIL__PORT: "587"
-            AUTHENTIK_EMAIL__USERNAME: ""
-            AUTHENTIK_EMAIL__PASSWORD: ""
-            AUTHENTIK_EMAIL__USE_TLS: "false"
-            AUTHENTIK_EMAIL__USE_SSL: "false"
-            AUTHENTIK_EMAIL__FROM: ""
-        user: root
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-            - ./authentik/media:/media
-            - ./authentik/certs:/certs
-            - ./authentik/custom-templates:/templates
-        depends_on:
-            postgresql:
-                condition: service_healthy
-            redis:
-                condition: service_healthy
-        networks:
-            - argos-network
-
-    
 networks:
     argos-network:
         driver: bridge
@@ -172,5 +66,3 @@ networks:
 volumes:
     db-data:
     mqtt-data:
-    auth-db:
-    auth-redis:
