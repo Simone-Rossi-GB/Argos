@@ -61,12 +61,10 @@ services:
         ports:
             - "8888:8888"
             - "1935:1935"
-
-    
 networks:
     argos-network:
         driver: bridge
 
 volumes:
-  db-data:
-  mqtt-data:
+    db-data:
+    mqtt-data:
