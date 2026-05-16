@@ -92,7 +92,7 @@ Un solo modulo attivo per camera, assegnato dall'utente:
 
 | Modulo | Evento | Icona mappa |
 |---|---|---|
-| `fall` | Caduta persona | 🔴 |
+| `fall` | aggressione | 🔴 |
 | `intrusion` | Violazione perimetro | 🟠 |
 | `crowd` | Folla anomala | 🟡 |
 | `vehicle` | Veicolo sospetto | 🔵 |
