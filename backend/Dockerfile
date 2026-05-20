@@ -5,7 +5,12 @@ WORKDIR /app
 
 # Installa dipendenze di sistema per compilare pacchetti Python
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gcc \
+    rustc \
+    cargo \
+    pkg-config \
+    libssl-dev \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
