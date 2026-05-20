@@ -51,7 +51,6 @@ class MQTTManager:
                 async with aiomqtt.Client(
                     hostname=settings.mqtt_host,
                     port=settings.mqtt_port,
-                    client_id="argos-backend",
                     keepalive=30,
                 ) as client:
                     self.client = client

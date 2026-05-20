@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api import auth, cameras, events, alerts, stream
+from app.api import auth, cameras, events, alerts, stream, ws, metadata
 
 api_router = APIRouter()
 
