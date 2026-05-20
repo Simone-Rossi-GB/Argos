@@ -16,7 +16,10 @@ services:
             - mediamtx
     
     backend:
-        build: ./backend
+        build:
+            context: ./backend
+        volumes:
+            - ./backend:/app
         container_name: argos-backend
         networks:
             - argos-network
