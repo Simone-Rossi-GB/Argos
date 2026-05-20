@@ -157,6 +157,21 @@ alerts      (id, user_id, event_id, severity, sent_at, read_at)
 
 ---
 
+## Mapbox setup
+
+The frontend dashboard uses Mapbox GL and requires a build-time public token.
+Set `MAPBOX_TOKEN` and `NEXT_PUBLIC_API_URL` before starting the stack, for example:
+
+```powershell
+$env:MAPBOX_TOKEN="your_mapbox_token_here"
+$env:NEXT_PUBLIC_API_URL="http://argos-backend:10170/api/v1"
+docker compose up -d --build dashboard
+```
+
+Or save them in a root `.env` file that Docker Compose can read.
+
+---
+
 ## Docker Compose
 
 ```yaml

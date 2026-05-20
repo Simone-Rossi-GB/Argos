@@ -17,7 +17,11 @@ services:
             - mediamtx
 
     dashboard:
-        build: ./frontend
+        build:
+            context: ./frontend
+            args:
+                NEXT_PUBLIC_MAPBOX_TOKEN: ${MAPBOX_TOKEN:-}
+                NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://argos-backend:10170/api/v1}
         container_name: argos-dashboard
         networks:
             - argos-network
@@ -25,6 +29,7 @@ services:
             - "3000:3000"
         environment:
             - NEXT_PUBLIC_MAPBOX_TOKEN=${MAPBOX_TOKEN:-}
+            - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://argos-backend:10170/api/v1}
     
     backend:
         build: ./backend

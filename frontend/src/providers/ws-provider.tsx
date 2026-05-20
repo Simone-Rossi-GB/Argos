@@ -20,8 +20,20 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
   const connect = useCallback(() => {
     if (!token || wsRef.current?.readyState === WebSocket.OPEN) return
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const ws = new WebSocket(`${protocol}//${window.location.host}/api/v1/ws?token=${token}`)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    console.log('Connettendo WebSocket a', apiUrl)
+    const wsUrl = apiUrl
+      ? (() => {
+          const url = new URL(apiUrl)
+          const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+          return `${protocol}//${url.host}/ws?token=${token}`
+        })()
+      : (() => {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+          return `${protocol}//${window.location.host}/ws?token=${token}`
+        })()
+    console.log('URL WebSocket:', wsUrl)
+    const ws = new WebSocket(wsUrl)
 
     ws.onopen = () => {
       connectedRef.current = true

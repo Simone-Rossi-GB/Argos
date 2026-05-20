@@ -1,10 +1,19 @@
 import type { User, Camera, Event, Alert, TokenResponse } from './types'
 
-const BASE = '/api/v1'
+const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10170/api/v1'
 
 function getToken() {
   if (typeof window === 'undefined') return null
   return localStorage.getItem('argos_token')
+}
+
+function setToken(token: string | null) {
+  if (typeof window === 'undefined') return
+  if (token) {
+    localStorage.setItem('argos_token', token)
+  } else {
+    localStorage.removeItem('argos_token')
+  }
 }
 
 async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -26,11 +35,15 @@ async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export const auth = {
-  login: (email: string, password: string) =>
-    req<TokenResponse>('/auth/login', {
+  login: async (email: string, password: string) => {
+    const token = await req<TokenResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
-    }),
+    })
+    console.log('Token ricevuto:', token)
+    setToken(token.access_token)
+    return token
+  },
 
   register: (name: string, email: string, password: string) =>
     req<User>('/auth/register', {
