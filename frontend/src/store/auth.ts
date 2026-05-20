@@ -17,7 +17,6 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       login: (token, user) => set({ token, user }),
       logout: () => {
-        if (typeof window !== 'undefined') localStorage.removeItem('argos_token')
         set({ token: null, user: null })
       },
       setUser: (user) => set({ user }),
@@ -28,3 +27,8 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 )
+
+export function getToken() {
+  if (typeof window === 'undefined') return null
+  return useAuthStore.getState().token
+}

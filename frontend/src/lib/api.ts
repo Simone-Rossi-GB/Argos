@@ -1,20 +1,7 @@
 import type { User, Camera, Event, Alert, TokenResponse } from './types'
+import { getToken } from '@/store/auth'
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10170/api/v1'
-
-function getToken() {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('argos_token')
-}
-
-function setToken(token: string | null) {
-  if (typeof window === 'undefined') return
-  if (token) {
-    localStorage.setItem('argos_token', token)
-  } else {
-    localStorage.removeItem('argos_token')
-  }
-}
 
 async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken()
@@ -41,7 +28,6 @@ export const auth = {
       body: JSON.stringify({ email, password }),
     })
     console.log('Token ricevuto:', token)
-    setToken(token.access_token)
     return token
   },
 
