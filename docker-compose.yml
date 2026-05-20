@@ -21,8 +21,8 @@ services:
         container_name: argos-dashboard
         networks:
             - argos-network
-        expose:
-            - "3000"
+        ports:
+            - "3000:3000"
         environment:
             - NEXT_PUBLIC_MAPBOX_TOKEN=${MAPBOX_TOKEN:-}
     

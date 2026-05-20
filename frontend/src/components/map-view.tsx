@@ -4,6 +4,10 @@ import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Camera } from '@/lib/types'
 
+type MapboxGLWithAccessToken = typeof import('mapbox-gl') & {
+  accessToken: string
+}
+
 interface MapViewProps {
   cameras: Camera[]
   className?: string
@@ -25,7 +29,7 @@ export function MapView({ cameras, className }: MapViewProps) {
     if (typeof window === 'undefined' || !mapRef.current) return
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mapboxgl = require('mapbox-gl') as typeof import('mapbox-gl')
+    const mapboxgl = require('mapbox-gl') as MapboxGLWithAccessToken
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''
 
     const map = new mapboxgl.Map({
