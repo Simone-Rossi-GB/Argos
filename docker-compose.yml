@@ -70,11 +70,11 @@ services:
         container_name: minio
         ports:
             - "9000:9000"      # Console/API
-            - "9001:9001"      # Web UI
+            - "9002:9002"      # Web UI
         environment:
             MINIO_ROOT_USER: "minioadmin"
             MINIO_ROOT_PASSWORD: "minioadmin123"
-        command: server /data --console-address ":9001"
+        command: server /data --console-address ":9002"
         volumes:
             - minio_data:/data
 networks:
