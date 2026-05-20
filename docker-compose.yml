@@ -13,7 +13,18 @@ services:
             - ./nginx/locations.conf:/etc/nginx/locations.conf:ro
         depends_on:
             - backend
+            - dashboard
             - mediamtx
+
+    dashboard:
+        build: ./frontend
+        container_name: argos-dashboard
+        networks:
+            - argos-network
+        expose:
+            - "3000"
+        environment:
+            - NEXT_PUBLIC_MAPBOX_TOKEN=${MAPBOX_TOKEN:-}
     
     backend:
         build: ./backend

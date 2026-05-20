@@ -104,7 +104,8 @@ snapshots/
 media/
 
 *.m3u8
-*.ts
+# I segmenti HLS .ts sono coperti dalle cartelle streams/ recordings/ clips/ media/ già ignorate sopra
+# NON aggiungere *.ts qui: ignorerebbe anche i sorgenti TypeScript
 
 # -------------------------
 # MQTT / MediaMTX
