@@ -20,6 +20,8 @@ services:
             context: ./backend
         volumes:
             - ./backend:/app
+        ports:
+            - "10170:10170"
         container_name: argos-backend
         networks:
             - argos-network
