@@ -61,7 +61,7 @@ export const createFrameProcessor = (moduleType: string) => {
     'worklet';
 
     try {
-      // 1. RIDIMENSIONA FRAME (MediaPipe vuole 224x224 o 256x256)
+      // 1. RIDIMENSIONA FRAME (TFLite models: 224x224 base, poi ogni detector fa resize)
       const resized = resize(frame, {
         scale: {
           width: 224,
@@ -71,7 +71,7 @@ export const createFrameProcessor = (moduleType: string) => {
         dataType: 'uint8',
       });
 
-      // 2. CONVERTI in ImageData per MediaPipe
+      // 2. CONVERTI in ImageData per TFLite detectors
       const imageData = {
         data: resized.buffer,
         width: 224,
