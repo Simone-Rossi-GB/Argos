@@ -4,12 +4,9 @@
  * LOGICA: Se la testa è quasi allo stesso livello del bacino → persona orizzontale → caduta
  */
 
-// TODO: Installa MediaPipe Tasks Vision
-// npm install @mediapipe/tasks-vision
+import { FilesetResolver, PoseLandmarker, PoseLandmarkerResult } from '@mediapipe/tasks-vision';
 
-// import { FilesetResolver, PoseLandmarker, PoseLandmarkerResult } from '@mediapipe/tasks-vision';
-
-let poseLandmarker: any = null; // TODO: tipizza con PoseLandmarker
+let poseLandmarker: PoseLandmarker | null = null;
 
 /**
  * TODO: INIT - Carica il modello
