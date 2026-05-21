@@ -1,25 +1,30 @@
 /**
- * Streaming Service - Gestisce streaming video RTSP → MediaMTX
+ * Streaming Service - STUB VERSION
  *
- * Usa FFmpeg per leggere dalla camera e inviare lo stream al server MediaMTX
- * Il server poi converte RTSP → HLS per la dashboard web
+ * ⚠️ NOTA: FFmpegKit è stato ritirato nel gennaio 2025 e non è più disponibile.
+ *
+ * Alternative future:
+ * 1. Community fork: https://github.com/luthviar/ffmpeg-kit-ios-full
+ * 2. react-native-video per streaming
+ * 3. expo-av
+ * 4. WebRTC nativo iOS
+ *
+ * Per ora, queste funzioni sono STUB che non fanno nulla ma prevengono errori.
  */
 
-import { FFmpegKit, FFmpegKitConfig, FFmpegSession } from 'ffmpeg-kit-react-native';
 import { getItem } from './storage';
 
-let streamingSession: FFmpegSession | null = null;
 let isStreaming = false;
 let currentQuality: '360p' | '720p' | '1080p' = '720p';
 
 /**
- * TODO: AVVIA STREAMING
- *
- * Legge dalla camera del device e invia lo stream a MediaMTX via RTSP
+ * STUB: Avvia streaming (non implementato)
  */
 export async function startStreaming(quality: '360p' | '720p' | '1080p'): Promise<void> {
+  console.warn('⚠️ Streaming not implemented - FFmpegKit retired. See streaming.ts for alternatives.');
+
   if (isStreaming) {
-    console.log('⚠️ Stream already running');
+    console.log('⚠️ Stream already "running" (stub mode)');
     return;
   }
 
@@ -33,111 +38,42 @@ export async function startStreaming(quality: '360p' | '720p' | '1080p'): Promis
 
     currentQuality = quality;
 
-    // Mappa qualità → risoluzione
-    const resolutions = {
-      '360p': '640x360',
-      '720p': '1280x720',
-      '1080p': '1920x1080',
-    };
-
-    const resolution = resolutions[quality];
-
-    // TODO: COMANDO FFMPEG
-    // iOS usa "avfoundation" come input
-    // "0:0" = video:audio (primo device video, primo device audio)
-    const command = `
-      -f avfoundation
-      -i "0:0"
-      -vf scale=${resolution}
-      -c:v libx264
-      -preset ultrafast
-      -tune zerolatency
-      -b:v 2M
-      -maxrate 2M
-      -bufsize 4M
-      -pix_fmt yuv420p
-      -g 50
-      -f rtsp
-      rtsp://${serverUrl}:8554/${cameraId}
-    `.trim().replace(/\s+/g, ' ');
-
-    console.log(`🎥 Starting FFmpeg stream: ${command}`);
-
-    // Esegui FFmpeg in modo asincrono
-    streamingSession = await FFmpegKit.executeAsync(
-      command,
-      async (session) => {
-        const returnCode = await session.getReturnCode();
-        console.log(`FFmpeg session completed with return code: ${returnCode}`);
-
-        if (returnCode.isValueSuccess()) {
-          console.log('✅ Stream completed successfully');
-        } else {
-          console.error(`❌ Stream failed with code: ${returnCode}`);
-        }
-
-        isStreaming = false;
-        streamingSession = null;
-      },
-      (log) => {
-        // Log FFmpeg output (utile per debug)
-        console.log(`[FFmpeg] ${log.getMessage()}`);
-      },
-      (statistics) => {
-        // Statistiche streaming (opzionale)
-        // console.log(`[Stats] bitrate: ${statistics.getBitrate()}, fps: ${statistics.getVideoFps()}`);
-      }
-    );
-
+    // Simula streaming
     isStreaming = true;
-    console.log(`✅ Streaming started at ${quality}`);
+    console.log(`📹 [STUB] "Streaming" started at ${quality} to ${serverUrl}:8554/${cameraId}`);
 
   } catch (error) {
-    console.error('❌ Failed to start streaming:', error);
+    console.error('❌ Failed to start streaming stub:', error);
     isStreaming = false;
-    streamingSession = null;
     throw error;
   }
 }
 
 /**
- * TODO: FERMA STREAMING
+ * STUB: Ferma streaming
  */
 export async function stopStreaming(): Promise<void> {
-  if (!isStreaming || !streamingSession) {
+  if (!isStreaming) {
     console.log('⚠️ No stream running');
     return;
   }
 
-  try {
-    const sessionId = await streamingSession.getSessionId();
-    await FFmpegKitConfig.cancel(sessionId);
-
-    streamingSession = null;
-    isStreaming = false;
-
-    console.log('✅ Streaming stopped');
-
-  } catch (error) {
-    console.error('❌ Failed to stop streaming:', error);
-    throw error;
-  }
+  isStreaming = false;
+  console.log('⏹️ [STUB] Streaming stopped');
 }
 
 /**
- * TODO: CAMBIA QUALITÀ
- *
- * Ferma lo stream corrente e riavvia con la nuova qualità
+ * STUB: Cambia qualità
  */
 export async function setQuality(quality: '360p' | '720p' | '1080p'): Promise<void> {
   try {
     if (isStreaming) {
-      console.log(`🔄 Changing quality from ${currentQuality} to ${quality}...`);
+      console.log(`🔄 [STUB] Changing quality from ${currentQuality} to ${quality}...`);
       await stopStreaming();
       await startStreaming(quality);
     } else {
       currentQuality = quality;
-      console.log(`✅ Quality preset to ${quality} (will apply on next stream)`);
+      console.log(`✅ [STUB] Quality preset to ${quality}`);
     }
 
   } catch (error) {
@@ -147,18 +83,16 @@ export async function setQuality(quality: '360p' | '720p' | '1080p'): Promise<vo
 }
 
 /**
- * TODO: AUTO-STREAM
- *
- * Avvia lo stream per N secondi e poi lo ferma automaticamente
- * Usalo quando l'AI rileva un evento importante (es. caduta, intrusion)
+ * STUB: Auto-stream
  */
 export async function startAutoStream(durationSeconds: number): Promise<void> {
   try {
+    console.log(`🎥 [STUB] Starting auto-stream for ${durationSeconds} seconds...`);
     await startStreaming(currentQuality);
 
     setTimeout(async () => {
       await stopStreaming();
-      console.log(`⏱️ Auto-stream stopped after ${durationSeconds} seconds`);
+      console.log(`⏱️ [STUB] Auto-stream stopped after ${durationSeconds} seconds`);
     }, durationSeconds * 1000);
 
   } catch (error) {

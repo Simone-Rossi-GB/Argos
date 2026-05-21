@@ -25,9 +25,6 @@ target 'Argos' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # Fix: FFmpeg Kit - usa min variant (più stabile)
-  pod 'ffmpeg-kit-ios-min', '~> 6.0'
-
   post_install do |installer|
     react_native_post_install(
       installer,
