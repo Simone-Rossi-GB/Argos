@@ -10,7 +10,8 @@ from app.models.camera import Camera
 from app.schemas.camera import CameraCreate, CameraUpdate, CameraRead, CameraStatus
 from app.utils.security import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
+public_router = APIRouter()
 
 
 @router.get("/", response_model=list[CameraRead])
@@ -104,7 +105,7 @@ async def delete_camera(
 
 
 # Endpoint per le camere: aggiornamento stato (chiamato via MQTT internamente)
-@router.patch("/{camera_id}/status", response_model=CameraRead)
+@public_router.patch("/{camera_id}/status", response_model=CameraRead)
 async def update_camera_status(
     camera_id: uuid.UUID,
     data: CameraStatus,

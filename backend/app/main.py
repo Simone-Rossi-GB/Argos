@@ -1,14 +1,17 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+import logging
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import api_router
+from app.api.health import router as health_router
 from app.core.database import engine, Base
-from app.models.user import User
-from app.schemas.user import UserRead
+from app.core.logging import setup_logging
 from app.services.mqtt_client import mqtt_manager
 from app.services.websocket_manager import websocket_manager
-from app.utils.security import get_current_user
 
 
 @asynccontextmanager
@@ -31,6 +34,8 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
+logger = setup_logging()
+
 app = FastAPI(
     title="Argos Backend",
     description="Sistema distribuito di sorveglianza comunitaria",
@@ -47,17 +52,59 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def log_error_responses(request: Request, call_next):
+    response = await call_next(request)
+    if response.status_code >= 400:
+        body_text = "<unavailable>"
+        try:
+            if hasattr(response, "body") and isinstance(response.body, (bytes, str)):
+                body_text = response.body.decode("utf-8", errors="replace") if isinstance(response.body, bytes) else response.body
+            elif hasattr(response, "media"):
+                body_text = str(response.media)
+        except Exception:
+            body_text = "<failed to read response body>"
+
+        logger.error(
+            "%s %s %s %s",
+            request.method,
+            request.url.path,
+            response.status_code,
+            body_text,
+        )
+    return response
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error("%s %s 422 %s", request.method, request.url.path, exc.errors())
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    logger.error("%s %s %s %s", request.method, request.url.path, exc.status_code, exc.detail)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=exc.headers,
+    )
+
+
+@app.exception_handler(Exception)
+async def internal_exception_handler(request: Request, exc: Exception):
+    logger.exception("%s %s 500 internal server error", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error"},
+    )
+
+
 # ── Router REST ────────────────────────
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(health_router)
 
-
-# ── Endpoint /me ───────────────────────
-@app.get("/api/v1/me", response_model=UserRead, tags=["user"])
-async def read_current_user(current_user: User = Depends(get_current_user)):
-    return current_user
-
-
-# ── Health check ───────────────────────
-@app.get("/health", tags=["health"])
-async def health_check():
-    return {"status": "ok"}

@@ -68,9 +68,12 @@ __pycache__/
 *.py[cod]
 *.pyo
 
+# Virtual environments (any name)
 .venv/
 venv/
+venv*/
 env/
+.env/
 
 .pytest_cache/
 .mypy_cache/
@@ -78,6 +81,15 @@ env/
 
 # FastAPI temp
 instance/
+
+# Model training artifacts
+*.pt
+*.pth
+*.onnx
+*_saved_model/
+*.npy
+*.h5
+*.pkl
 
 # -------------------------
 # Database

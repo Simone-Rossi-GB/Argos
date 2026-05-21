@@ -7,10 +7,10 @@ from app.models.user import User
 router = APIRouter()
 
 @router.get("/endpoints", tags=["system"])
-async def list_all_endpoints(current_user: User = Depends(get_current_user)):
+async def list_all_endpoints():
     """
     Restituisce la lista di tutti gli endpoint API disponibili.
-    Richiede autenticazione.
+    Endpoint pubblico (senza autenticazione).
     """
     from app.api import api_router
     from app.main import app
@@ -48,11 +48,10 @@ async def list_public_endpoints():
     Restituisce la lista degli endpoint pubblici (senza autenticazione).
     """
     public_paths = [
-        "/auth/register",
-        "/auth/login",
-        "/cameras/{camera_id}/status",
-        "/events/",
-        "/alerts/",
+        "/api/v1/auth/register",
+        "/api/v1/auth/login",
+        "/api/v1/cameras/{camera_id}/status",
+        "/health",
     ]
     
     return {
