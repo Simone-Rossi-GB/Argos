@@ -2,7 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Sostituisci con il tuo token
+const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'YOUR_MAPBOX_ACCESS_TOKEN';
+mapboxgl.accessToken = token;
+if (!token || token === 'YOUR_MAPBOX_ACCESS_TOKEN') {
+  console.warn('Mapbox token is missing. Set NEXT_PUBLIC_MAPBOX_TOKEN or MAPBOX_TOKEN for Docker compose.');
+}
 
 function Map() {
   const mapContainer = useRef(null);
