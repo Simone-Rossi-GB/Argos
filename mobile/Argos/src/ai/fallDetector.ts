@@ -5,6 +5,7 @@
  */
 
 import { FilesetResolver, PoseLandmarker, PoseLandmarkerResult } from '@mediapipe/tasks-vision';
+import type { ImageData } from './types';
 
 let poseLandmarker: PoseLandmarker | null = null;
 
@@ -21,8 +22,6 @@ export async function initFallDetector(): Promise<void> {
   try {
     console.log('🔄 Loading Pose Landmarker model...');
 
-    // TODO: Decommenta e implementa
-    /*
     const vision = await FilesetResolver.forVisionTasks(
       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm'
     );
@@ -37,7 +36,6 @@ export async function initFallDetector(): Promise<void> {
       minPoseDetectionConfidence: 0.5,
       minTrackingConfidence: 0.5,
     });
-    */
 
     console.log('✅ Pose Landmarker loaded');
   } catch (error) {
@@ -66,11 +64,10 @@ export function detectFall(imageData: ImageData, timestamp: number): DetectionRe
   }
 
   try {
-    // TODO: Esegui inferenza
-    // const result = poseLandmarker.detectForVideo(imageData, timestamp);
+    // Esegui inferenza (cast a any perché MediaPipe accetta formati diversi)
+    const result: PoseLandmarkerResult = poseLandmarker.detectForVideo(imageData as any, timestamp);
 
-    // TODO: Estrai landmarks della persona
-    /*
+    // Estrai landmarks della persona
     if (!result.landmarks || result.landmarks.length === 0) {
       return { detected: false, confidence: 0, type: 'fall' };
     }
@@ -78,30 +75,39 @@ export function detectFall(imageData: ImageData, timestamp: number): DetectionRe
     const pose = result.landmarks[0];
 
     // Landmarks MediaPipe (33 punti)
-    const nose = pose[0];        // testa
+    const nose = pose[0];        // testa (indice 0)
     const leftHip = pose[23];    // bacino sx
     const rightHip = pose[24];   // bacino dx
+    const leftShoulder = pose[11]; // spalla sx
+    const rightShoulder = pose[12]; // spalla dx
 
-    // Calcola posizione media del bacino
+    // Calcola posizione media del bacino e spalle
     const avgHipY = (leftHip.y + rightHip.y) / 2;
+    const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
     const headY = nose.y;
 
-    // LOGICA: Se head.y ≈ hip.y → persona orizzontale
-    const yDiff = Math.abs(headY - avgHipY);
-    const isFallen = yDiff < 0.15; // soglia empirica (15% dell'immagine)
+    // LOGICA 1: Se head.y ≈ hip.y → persona orizzontale
+    const headHipDiff = Math.abs(headY - avgHipY);
 
-    // Confidence in base a quanto è orizzontale
-    const confidence = isFallen ? Math.max(0.7, 1 - yDiff * 3) : 0;
+    // LOGICA 2: Se spalle e bacino sono sullo stesso livello → persona sdraiata
+    const shoulderHipDiff = Math.abs(avgShoulderY - avgHipY);
+
+    // Caduta se entrambe le condizioni sono vere
+    const isFallen = headHipDiff < 0.15 && shoulderHipDiff < 0.2;
+
+    // Confidence in base a quanto è orizzontale (più è orizzontale, più alta)
+    let confidence = 0;
+    if (isFallen) {
+      // Confidence inversamente proporzionale alla differenza
+      confidence = Math.max(0.7, 1 - (headHipDiff + shoulderHipDiff) * 2);
+      confidence = Math.min(confidence, 0.95); // Cap a 0.95
+    }
 
     return {
       detected: isFallen,
       confidence,
       type: 'fall',
     };
-    */
-
-    // PLACEHOLDER - rimuovi quando implementi
-    return { detected: false, confidence: 0, type: 'fall' };
 
   } catch (error) {
     console.error('❌ Fall detection error:', error);
