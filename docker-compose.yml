@@ -74,11 +74,18 @@ services:
     mediamtx:
         image: bluenviron/mediamtx
         container_name: argos-mediamtx
+        environment:
+            MTX_WEBRTCENABLE: "yes"
+            MTX_WEBRTCICESERVERS: '[{urls: ["stun:stun.l.google.com:19302"]}]'
         networks:
             - argos-network
         ports:
-            - "8888:8888"
-            - "1935:1935"
+            - "8889:8889"  # WebRTC (WHIP)
+            - "8554:8554"  # RTSP
+            - "8888:8888"  # HLS (dashboard viewing)
+            - "1935:1935"  # RTMP (opzionale)
+            # UDP range per WebRTC media (opzionale, commentato per default)
+            # - "50000-50100:50000-50100/udp"
 networks:
     argos-network:
         driver: bridge
