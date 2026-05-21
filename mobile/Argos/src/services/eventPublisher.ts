@@ -14,6 +14,19 @@ import { getItem } from './storage';
 import { startAutoStream } from './streaming';
 
 /**
+ * Store per l'ultimo frame catturato
+ * Viene aggiornato dal frameProcessor ogni N frame
+ */
+let lastCapturedFrameUri: string | null = null;
+
+/**
+ * Salva l'ultimo frame URI (chiamato dal frameProcessor)
+ */
+export function setLastFrame(uri: string): void {
+  lastCapturedFrameUri = uri;
+}
+
+/**
  * TODO: PUBBLICA EVENTO AI
  *
  * Chiamala ogni volta che l'AI rileva qualcosa
@@ -26,12 +39,10 @@ export async function publishAIEvent(detection: {
   try {
     const cameraId = await getItem('camera_id');
 
-    // TODO: 1. SCATTA FOTO del frame corrente
-    // const photoUri = await captureCurrentFrame();
-    // Per ora usa placeholder
-    const photoUri = 'file://placeholder.jpg';
+    // 1. CATTURA FOTO del frame corrente
+    const photoUri = await captureCurrentFrame();
 
-    // TODO: 2. UPLOAD FOTO al backend
+    // 2. UPLOAD FOTO al backend
     console.log('📤 Uploading photo...');
     const photoUrl = await uploadPhoto(photoUri);
 
@@ -92,14 +103,26 @@ export async function publishCameraStatus(
 }
 
 /**
- * TODO: Implementa questa funzione
- * Cattura il frame corrente dalla camera e salvalo come file locale
+ * Cattura il frame corrente dalla camera
  *
- * Opzioni:
- * 1. Usa Camera.takePhoto() di react-native-vision-camera
- * 2. Oppure salva l'ultimo frame processato in una variabile globale
+ * Strategia: Usa l'ultimo frame salvato dal frameProcessor
+ * Il frameProcessor chiama setLastFrame() ogni N frame con uno snapshot
+ *
+ * NOTA: Per produzione, integrare con Camera.takePhoto() per qualità migliore
  */
 async function captureCurrentFrame(): Promise<string> {
-  // PLACEHOLDER - implementa con Camera.takePhoto()
-  return 'file://temp/current_frame.jpg';
+  if (lastCapturedFrameUri) {
+    console.log('📸 Using cached frame snapshot');
+    return lastCapturedFrameUri;
+  }
+
+  // Fallback: genera un placeholder se non c'è frame disponibile
+  console.warn('⚠️ No frame snapshot available, using placeholder');
+
+  // TODO: In produzione, implementare:
+  // 1. Integrazione con Camera.takePhoto() di react-native-vision-camera
+  // 2. Oppure salvare il frame buffer come immagine usando react-native-fs
+
+  // Per ora ritorna un URI placeholder (il backend dovrebbe gestirlo)
+  return 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAA//EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AH//Z';
 }
