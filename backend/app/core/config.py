@@ -24,6 +24,14 @@ class Settings(BaseSettings):
     upload_dir: str = "./uploads"
     max_upload_size_mb: int = 20
 
+    # ── MinIO / Object storage ───────────
+    minio_enabled: bool = False
+    minio_endpoint: str = "minio:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin123"
+    minio_bucket: str = "uploads"
+    minio_secure: bool = False
+
     # ── Debug ─────────────────────────────
     debug: bool = True
 
@@ -36,5 +44,6 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Crea la directory upload se non esiste
-Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
+# Crea la directory upload se non esiste solo se MinIO non abilitato
+if not settings.minio_enabled:
+    Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)

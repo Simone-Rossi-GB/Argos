@@ -34,7 +34,12 @@ services:
             - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-ws://localhost:10170/api/v1/ws}
     
     backend:
-        build: ./backend
+        build:
+            context: ./backend
+        volumes:
+            - ./backend:/app
+        ports:
+            - "10170:10170"
         container_name: argos-backend
         networks:
             - argos-network
@@ -86,6 +91,18 @@ services:
             - "1935:1935"  # RTMP (opzionale)
             # UDP range per WebRTC media (opzionale, commentato per default)
             # - "50000-50100:50000-50100/udp"
+    minio:
+        image: minio/minio:latest
+        container_name: minio
+        ports:
+            - "9000:9000"      # Console/API
+            - "9002:9002"      # Web UI
+        environment:
+            MINIO_ROOT_USER: "minioadmin"
+            MINIO_ROOT_PASSWORD: "minioadmin123"
+        command: server /data --console-address ":9002"
+        volumes:
+            - minio_data:/data
 networks:
     argos-network:
         driver: bridge
@@ -93,3 +110,4 @@ networks:
 volumes:
     db-data:
     mqtt-data:
+    minio_data:

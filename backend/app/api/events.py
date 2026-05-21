@@ -12,7 +12,8 @@ from app.models.event import Event, MediaClip
 from app.schemas.event import EventCreate, EventRead
 from app.utils.security import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
+internal_router = APIRouter()
 
 
 @router.get("/", response_model=list[EventRead])
@@ -63,7 +64,7 @@ async def get_event(
     return event
 
 
-@router.post("/", response_model=EventRead, status_code=status.HTTP_201_CREATED)
+@internal_router.post("/", response_model=EventRead, status_code=status.HTTP_201_CREATED)
 async def create_event(
     data: EventCreate,
     db: AsyncSession = Depends(get_db),

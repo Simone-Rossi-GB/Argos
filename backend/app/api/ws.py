@@ -11,21 +11,37 @@ router = APIRouter()
 @router.websocket("/")
 async def websocket_endpoint(
     websocket: WebSocket,
-    token: str = Query(...),
+    token: str | None = Query(default=None),
 ):
     """
     Connessione WebSocket per la dashboard.
-    Il token JWT va passato come query parameter: ws://host/api/v1/ws?token=xxxxxxx
+    Il token JWT può essere passato come query parameter o Authorization header.
     """
+    if token is None:
+        auth_header = websocket.headers.get("authorization")
+        if auth_header and auth_header.lower().startswith("bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+
+    if token is None:
+        logger.warning("WebSocket authentication failed: missing token")
+        await websocket.close(code=4001)
+        return
+
     user = None
     async with async_session() as db:
         try:
             user = await get_user_from_token(token, db)
         except Exception as e:
-            logger.warning(f"Autenticazione WebSocket fallita: {e}")
+            logger.warning(f"WebSocket authentication failed: {e}")
             await websocket.close(code=4001)
             return
 
+    if user is None:
+        logger.warning("WebSocket authentication failed: invalid token")
+        await websocket.close(code=4001)
+        return
+
+    await websocket.accept()
     user_id_str = str(user.id)
     await websocket_manager.connect(user_id_str, websocket)
 

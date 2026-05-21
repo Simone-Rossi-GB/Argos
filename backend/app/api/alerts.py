@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, update
+from sqlalchemy import select, desc
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
@@ -12,7 +12,8 @@ from app.models.event import Event
 from app.schemas.alert import AlertCreate, AlertRead, AlertUpdate
 from app.utils.security import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
+internal_router = APIRouter()
 
 
 @router.get("/", response_model=list[AlertRead])
@@ -77,7 +78,7 @@ async def update_alert(
     return alert
 
 
-@router.post("/", response_model=AlertRead, status_code=status.HTTP_201_CREATED)
+@internal_router.post("/", response_model=AlertRead, status_code=status.HTTP_201_CREATED)
 async def create_alert(
     data: AlertCreate,
     db: AsyncSession = Depends(get_db),
