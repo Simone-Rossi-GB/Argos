@@ -45,9 +45,18 @@ services:
             - argos-network
         expose:
             - "10170"
+        environment:
+            - MINIO_ENABLED=${MINIO_ENABLED:-true}
+            - MINIO_ENDPOINT=${MINIO_ENDPOINT:-minio:9000}
+            - MINIO_PUBLIC_ENDPOINT=${MINIO_PUBLIC_ENDPOINT:-localhost:9000}
+            - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+            - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin123}
+            - MINIO_BUCKET=${MINIO_BUCKET:-uploads}
+            - MINIO_SECURE=${MINIO_SECURE:-false}
         depends_on:
             - db
             - mqtt
+            - minio
     
     db:
         image: postgres:16
@@ -81,7 +90,7 @@ services:
         container_name: argos-mediamtx
         environment:
             MTX_WEBRTCENABLE: "yes"
-            MTX_WEBRTCICESERVERS: '[{urls: ["stun:stun.l.google.com:19302"]}]'
+            MTX_WEBRTCICESERVERS2_0_URL: "stun:stun.l.google.com:19302"
         networks:
             - argos-network
         ports:
@@ -94,6 +103,8 @@ services:
     minio:
         image: minio/minio:latest
         container_name: minio
+        networks:
+            - argos-network
         ports:
             - "9000:9000"      # Console/API
             - "9002:9002"      # Web UI

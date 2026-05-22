@@ -6,14 +6,26 @@ from sqlalchemy import select, desc
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
+from app.core.config import settings
 from app.models.user import User
 from app.models.camera import Camera
 from app.models.event import Event, MediaClip
 from app.schemas.event import EventCreate, EventRead
 from app.utils.security import get_current_user
+from app.utils.storage import to_public_url
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
 internal_router = APIRouter()
+
+
+def _rewrite_event_media(event: EventRead) -> EventRead:
+    """Replace stored MinIO URLs with browser-reachable presigned URLs on the response model."""
+    if not settings.minio_enabled:
+        return event
+    for clip in event.media_clips:
+        clip.photo_url = to_public_url(clip.photo_url)
+        clip.video_url = to_public_url(clip.video_url)
+    return event
 
 
 @router.get("/", response_model=list[EventRead])
@@ -42,7 +54,7 @@ async def list_events(
         query = query.where(Event.event_type == event_type)
 
     result = await db.execute(query)
-    return result.scalars().all()
+    return [_rewrite_event_media(EventRead.model_validate(e)) for e in result.scalars().all()]
 
 
 @router.get("/{event_id}", response_model=EventRead)
@@ -61,7 +73,7 @@ async def get_event(
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
-    return event
+    return _rewrite_event_media(EventRead.model_validate(event))
 
 
 @internal_router.post("/", response_model=EventRead, status_code=status.HTTP_201_CREATED)

@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input'
 
 export default function LoginPage() {
   const router = useRouter()
-  const login = useAuthStore((s) => s.login)
+  const setToken = useAuthStore((s) => s.setToken)
+  const setUser = useAuthStore((s) => s.setUser)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,8 +25,9 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const token = await auth.login(email, password)
+      setToken(token.access_token)
       const user = await auth.me()
-      login(token.access_token, user)
+      setUser(user)
       router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Errore di accesso')

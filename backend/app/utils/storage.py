@@ -1,4 +1,5 @@
 from typing import BinaryIO
+from datetime import timedelta
 from minio import Minio
 from minio.error import S3Error
 from app.core.config import settings
@@ -55,4 +56,44 @@ def upload_fileobj(file_obj: BinaryIO, object_name: str, content_type: str | Non
 
 def get_presigned_url(object_name: str, expires: int = 3600) -> str:
     client = get_minio_client()
-    return client.presigned_get_object(settings.minio_bucket, object_name, expires=expires)
+    return client.presigned_get_object(settings.minio_bucket, object_name, expires=timedelta(seconds=expires))
+
+
+def _get_public_minio_client() -> Minio:
+    endpoint = settings.minio_public_endpoint or settings.minio_endpoint
+    return Minio(
+        endpoint,
+        access_key=settings.minio_access_key,
+        secret_key=settings.minio_secret_key,
+        secure=bool(settings.minio_secure),
+        region="us-east-1",
+    )
+
+
+def to_public_url(stored: str | None, expires: int = 3600) -> str | None:
+    """Convert a stored media URL or object name into a browser-accessible presigned URL.
+
+    The DB stores URLs like 'http://minio:9000/uploads/cameras/<id>/events/x.mp4',
+    which the browser cannot reach. We re-sign against the public endpoint
+    (e.g. 'localhost:9000') so the dashboard can fetch the file directly.
+    """
+    if not stored:
+        return None
+    try:
+        object_name = stored
+        bucket_prefix = f"/{settings.minio_bucket}/"
+        if "://" in stored:
+            idx = stored.find(bucket_prefix)
+            if idx == -1:
+                return stored
+            object_name = stored[idx + len(bucket_prefix):]
+        # Strip any pre-existing query string so re-running on an already-presigned URL is a no-op
+        object_name = object_name.split("?", 1)[0]
+        client = _get_public_minio_client()
+        return client.presigned_get_object(
+            settings.minio_bucket,
+            object_name,
+            expires=timedelta(seconds=expires),
+        )
+    except Exception:
+        return stored

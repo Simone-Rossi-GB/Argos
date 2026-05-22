@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Bell, Camera, LogOut, Shield } from 'lucide-react'
+import { LayoutDashboard, Bell, Camera, LogOut, Shield, Archive } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth'
 import { useQuery } from '@tanstack/react-query'
@@ -12,6 +12,7 @@ const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/alerts', label: 'Alert', icon: Bell },
   { href: '/cameras', label: 'Telecamere', icon: Camera },
+  { href: '/archive', label: 'Archivio', icon: Archive },
 ]
 
 export function Sidebar() {
