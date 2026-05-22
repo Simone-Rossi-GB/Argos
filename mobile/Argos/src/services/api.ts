@@ -38,7 +38,7 @@ async function apiFetch(
   };
 
   // Aggiungi Bearer token se disponibile (tranne per login/register)
-  if (token && !endpoint.includes('/auth/')) {
+  if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
