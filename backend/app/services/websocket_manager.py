@@ -13,9 +13,8 @@ class WebSocketManager:
         # Mappa: user_id (stringa) -> lista di WebSocket attive
         self.active_connections: Dict[str, List[WebSocket]] = {}
 
-    async def connect(self, user_id: str, websocket: WebSocket):
-        """Accetta la connessione e la registra per l'utente."""
-        await websocket.accept()
+    def connect(self, user_id: str, websocket: WebSocket):
+        """Registra la connessione per l'utente (accept già fatto in ws.py)."""
         if user_id not in self.active_connections:
             self.active_connections[user_id] = []
         self.active_connections[user_id].append(websocket)

@@ -10,7 +10,7 @@
  * - Smoke Detection Dataset (Roboflow)
  */
 
-import { TensorflowModel } from 'react-native-fast-tflite';
+import { TensorflowModel } from 'react-native-nitro-tflite';
 import RNFS from 'react-native-fs';
 import type { ImageData } from './types';
 
@@ -32,6 +32,11 @@ const CLASS_LABELS = ['fire', 'smoke', 'normal'];
  * 4. Aggiungi a Info.plist: UIFileSharingEnabled = true
  */
 export async function initFireDetector(): Promise<void> {
+  // 🚧 STUB MODE: AI disabilitata temporaneamente
+  console.log('🚧 Fire Detector in STUB mode (AI disabled)');
+  return;
+
+  /* COMMENTED OUT - Uncomment when model is ready
   if (model) {
     console.log('⚠️ Fire Detector already initialized');
     return;
@@ -70,6 +75,7 @@ export async function initFireDetector(): Promise<void> {
     console.error('❌ Failed to load Fire Detector:', error);
     throw error;
   }
+  */
 }
 
 /**

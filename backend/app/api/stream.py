@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.camera import Camera
 from app.utils.security import get_current_user
+from app.services.mqtt_client import mqtt_manager
 
 router = APIRouter()
 
@@ -33,8 +34,15 @@ async def start_stream(
     if camera.status == "offline":
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Camera is offline")
 
-    # TODO: inviare comando MQTT alla camera per avviare lo stream
-    # mqtt_client.publish(f"cameras/{camera_id}/command", {"action": "start", "quality": quality})
+    # Invia comando MQTT alla camera per avviare lo stream
+    command = {
+        "action": "start_stream",
+        "quality": quality
+    }
+    await mqtt_manager.publish(
+        f"cameras/{camera_id}/cmd",
+        command
+    )
 
     hls_url = f"http://{settings.mediamtx_host}:{settings.mediamtx_port}/{camera_id}/index.m3u8"
 
@@ -63,8 +71,12 @@ async def stop_stream(
     if not camera:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Camera not found")
 
-    # TODO: inviare comando MQTT alla camera per fermare lo stream
-    # mqtt_client.publish(f"cameras/{camera_id}/command", {"action": "stop"})
+    # Invia comando MQTT alla camera per fermare lo stream
+    command = {"action": "stop_stream"}
+    await mqtt_manager.publish(
+        f"cameras/{camera_id}/cmd",
+        command
+    )
 
     return {
         "camera_id": str(camera_id),

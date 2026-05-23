@@ -19,7 +19,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { loginUser, registerUser, registerCamera } from './services/api';
+import { loginUser, registerUser, registerCamera, updateCamera } from './services/api';
 import {
   getItem,
   setItem,
@@ -30,7 +30,11 @@ import {
   STORAGE_KEYS,
 } from './services/storage';
 
-export default function SettingScreen() {
+interface Props {
+  navigation: { navigate: (screen: string) => void };
+}
+
+export default function SettingScreen({ navigation }: Props) {
   // Server config
   const [serverUrl, setServerUrlState] = useState('http://localhost:8080');
 
@@ -41,10 +45,12 @@ export default function SettingScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Camera config
+  const [cameraId, setCameraId] = useState<string>('');
   const [cameraName, setCameraName] = useState('');
   const [cameraLat, setCameraLat] = useState('45.4642');
   const [cameraLng, setCameraLng] = useState('9.1900');
   const [moduleType, setModuleType] = useState<string>('fall');
+  const [quality, setQuality] = useState<string>('720p');
   const [cameraRegistered, setCameraRegistered] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -64,6 +70,7 @@ export default function SettingScreen() {
       const config = await getCameraConfig();
       if (config.cameraId) {
         setCameraRegistered(true);
+        setCameraId(config.cameraId);
         setCameraName(config.cameraName || '');
         setModuleType(config.moduleType || 'fall');
       }
@@ -146,6 +153,7 @@ export default function SettingScreen() {
         moduleType: camera.module_type as 'fall' | 'intrusion' | 'crowd' | 'vehicle' | 'fire',
       });
 
+      setCameraId(camera.id);
       setCameraRegistered(true);
       Alert.alert('Successo', `Camera "${camera.name}" registrata`);
     } catch (error: any) {
@@ -157,6 +165,9 @@ export default function SettingScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
+        <Text style={styles.backText}>← Home</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>Impostazioni</Text>
 
       {/* Server URL */}
@@ -293,12 +304,41 @@ export default function SettingScreen() {
         </View>
       )}
 
-      {/* Status */}
+      {/* Status & Quality Selector */}
       {isLoggedIn && cameraRegistered && (
         <View style={styles.section}>
           <Text style={styles.successText}>✅ Camera configurata correttamente</Text>
           <Text style={styles.infoText}>Nome: {cameraName}</Text>
           <Text style={styles.infoText}>Modulo: {moduleType}</Text>
+
+          <Text style={styles.label}>Qualità Stream:</Text>
+          <View style={styles.modulePicker}>
+            {['360p', '720p', '1080p'].map((q) => (
+              <TouchableOpacity
+                key={q}
+                style={[styles.moduleBtn, quality === q && styles.moduleBtnActive]}
+                onPress={() => setQuality(q)}
+              >
+                <Text style={[styles.moduleText, quality === q && styles.moduleTextActive]}>
+                  {q}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            style={styles.btnSecondary}
+            onPress={async () => {
+              try {
+                await updateCamera(cameraId, { default_quality: quality as any });
+                Alert.alert('Successo', `Qualità impostata a ${quality}`);
+              } catch (error: any) {
+                Alert.alert('Errore', error.message || 'Aggiornamento fallito');
+              }
+            }}
+          >
+            <Text style={styles.btnText}>Salva Qualità</Text>
+          </TouchableOpacity>
         </View>
       )}
     </ScrollView>
@@ -311,11 +351,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     padding: 20,
   },
+  backButton: {
+    marginTop: 50,
+    marginBottom: 10,
+  },
+  backText: {
+    color: '#fff',
+    fontSize: 16,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
-    marginTop: 40,
+    marginTop: 10,
     marginBottom: 20,
   },
   section: {

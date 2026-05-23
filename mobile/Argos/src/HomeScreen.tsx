@@ -10,8 +10,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackNavigationProp } from './types/navigation';
 import { connectMQTT, disconnectMQTT, isConnectedToMQTT } from './services/mqtt';
 import { getCameraConfig } from './services/storage';
 
@@ -22,9 +20,11 @@ interface AlertItem {
   timestamp: Date;
 }
 
-export default function HomeScreen() {
-  const navigation = useNavigation<RootStackNavigationProp>();
+interface Props {
+  navigation: { navigate: (screen: string) => void };
+}
 
+export default function HomeScreen({ navigation }: Props) {
   const [mqttConnected, setMqttConnected] = useState(false);
   const [cameraName, setCameraName] = useState<string>('');
   const [moduleType, setModuleType] = useState<string>('');

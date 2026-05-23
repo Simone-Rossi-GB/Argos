@@ -9,9 +9,8 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
-import { useIsFocused } from '@react-navigation/native';
 
 // Services
 import { connectMQTT, disconnectMQTT, isConnectedToMQTT } from './services/mqtt';
@@ -24,10 +23,13 @@ import { initFallDetector, cleanupFallDetector } from './ai/fallDetector';
 import { initObjectDetector, cleanupObjectDetector } from './ai/objectDetector';
 import { initFireDetector, cleanupFireDetector } from './ai/fireDetector';
 
-export default function CameraScreen() {
+interface Props {
+  navigation: { navigate: (screen: string) => void };
+}
+
+export default function CameraScreen({ navigation }: Props) {
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
-  const isFocused = useIsFocused();
 
   const [isReady, setIsReady] = useState(false);
   const [moduleType, setModuleType] = useState<string | null>(null);
@@ -65,7 +67,12 @@ export default function CameraScreen() {
         setModuleType(config.moduleType);
 
         // 3. Inizializza modelli AI in base al modulo
-        await initAIModels(config.moduleType);
+        try {
+          await initAIModels(config.moduleType);
+        } catch (aiError) {
+          console.warn('⚠️ AI initialization failed, continuing without AI:', aiError);
+          // Continua comunque - MQTT e camera funzioneranno
+        }
 
         // 4. Connetti MQTT
         await connectMQTT();
@@ -183,16 +190,26 @@ export default function CameraScreen() {
       <Camera
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={isFocused && isReady}
+        isActive={isReady}
         frameProcessor={frameProcessor}
       />
 
-      {/* Status Overlay */}
+      {/* Status Overlay - Header in alto */}
       <View style={styles.statusBar}>
-        <View style={[styles.indicator, mqttConnected ? styles.online : styles.offline]} />
-        <Text style={styles.statusText}>
-          {mqttConnected ? 'Connected' : 'Disconnected'}
-        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
+          <Text style={styles.backText}>← Home</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Camera Feed</Text>
+      </View>
+
+      {/* Status Info - Sotto header */}
+      <View style={styles.statusInfo}>
+        <View style={styles.statusRow}>
+          <View style={[styles.indicator, mqttConnected ? styles.online : styles.offline]} />
+          <Text style={styles.statusText}>
+            {mqttConnected ? 'Connected' : 'Disconnected'}
+          </Text>
+        </View>
         <Text style={styles.moduleText}>Module: {moduleType}</Text>
       </View>
     </View>
@@ -213,14 +230,45 @@ const styles = StyleSheet.create({
   },
   statusBar: {
     position: 'absolute',
-    top: 60,
+    top: 0,
     left: 0,
     right: 0,
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+  },
+  backButton: {
+    paddingRight: 12,
+  },
+  backText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+  },
+  statusInfo: {
+    position: 'absolute',
+    top: 90, // Sotto l'header
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   indicator: {
     width: 10,
@@ -236,13 +284,12 @@ const styles = StyleSheet.create({
   },
   statusText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    flex: 1,
   },
   moduleText: {
     color: '#fff',
-    fontSize: 12,
-    opacity: 0.7,
+    fontSize: 13,
+    opacity: 0.8,
   },
 });

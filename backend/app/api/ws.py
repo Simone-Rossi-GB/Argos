@@ -43,7 +43,7 @@ async def websocket_endpoint(
 
     await websocket.accept()
     user_id_str = str(user.id)
-    await websocket_manager.connect(user_id_str, websocket)
+    websocket_manager.connect(user_id_str, websocket)
 
     try:
         # Mantiene la connessione aperta e ascolta messaggi di ping/pong

@@ -10,12 +10,12 @@
  * 80 classi COCO: person, car, motorcycle, truck, bus, etc.
  */
 
-import { TensorflowModel } from 'react-native-fast-tflite';
+import { TensorflowModel } from 'react-native-nitro-tflite';
 import RNFS from 'react-native-fs';
 import type { ImageData, Rect } from './types';
 
 let model: TensorflowModel | null = null;
-const MODEL_PATH = 'models/yolov8n_float16.tflite'; // Relativo a assets/
+const MODEL_PATH = 'models/yolov8n_float16.tflite';
 
 /**
  * COCO DATASET CLASSES (80 classi)

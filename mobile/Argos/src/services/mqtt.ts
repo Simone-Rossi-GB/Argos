@@ -14,6 +14,7 @@ import { handleCommand } from './commandHandler';
 
 let client: MqttClient | null = null;
 let isConnected = false;
+let isConnecting = false;
 
 /**
  * CONNETTI al broker MQTT
@@ -21,21 +22,53 @@ let isConnected = false;
  * Chiamalo all'avvio della CameraScreen
  */
 export async function connectMQTT(): Promise<void> {
+  // Se già connesso, non riconnettersi
+  if (client && isConnected) {
+    console.log('✅ MQTT already connected, skipping reconnect');
+    return;
+  }
+
+  // Se sta già connettendo, aspetta
+  if (isConnecting) {
+    console.log('⏳ MQTT connection already in progress, waiting...');
+    return;
+  }
+
+  isConnecting = true;
+
+  // Pulisci connessione esistente se presente
+  if (client) {
+    try {
+      console.log('🧹 Cleaning up existing MQTT client...');
+      await client.endAsync();
+      client = null;
+    } catch (error) {
+      console.warn('⚠️ Error cleaning up client:', error);
+    }
+  }
+
   try {
     const serverUrl = await getItem('server_url');
     const cameraId = await getItem('camera_id');
 
+    console.log('🔍 MQTT Debug - serverUrl:', serverUrl);
+    console.log('🔍 MQTT Debug - cameraId:', cameraId);
+
     if (!serverUrl || !cameraId) {
+      console.error('❌ Missing storage data:', { serverUrl, cameraId });
       throw new Error('Missing server_url or camera_id');
     }
 
-    // Rimuovi http:// o https:// se presente
-    const cleanUrl = serverUrl.replace(/^https?:\/\//, '');
+    // Rimuovi http:// e porta (es. http://172.20.10.4:8080 → 172.20.10.4)
+    const cleanUrl = serverUrl
+      .replace(/^https?:\/\//, '')  // Rimuovi protocollo
+      .replace(/:\d+$/, '');         // Rimuovi porta
 
     // WebSocket MQTT su porta 9001
     const brokerUrl = `ws://${cleanUrl}:9001`;
 
-    console.log(`🔄 Connecting to MQTT broker: ${brokerUrl}`);
+    console.log(`🔄 MQTT connecting to: ${brokerUrl}`);
+    console.log(`🔍 Client ID: camera_${cameraId}`);
 
     client = mqtt.connect(brokerUrl, {
       clientId: `camera_${cameraId}`,

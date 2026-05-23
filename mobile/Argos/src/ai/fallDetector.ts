@@ -7,12 +7,12 @@
  * 17 keypoints: nose, eyes, ears, shoulders, elbows, wrists, hips, knees, ankles
  */
 
-import { TensorflowModel } from 'react-native-fast-tflite';
+import { TensorflowModel } from 'react-native-nitro-tflite';
 import RNFS from 'react-native-fs';
 import type { ImageData } from './types';
 
 let model: TensorflowModel | null = null;
-const MODEL_PATH = 'models/movenet_thunder_fp16.tflite'; // Relativo a assets/
+const MODEL_PATH = 'models/movenet_thunder_fp16.tflite';
 
 /**
  * KEYPOINT INDICES (MoveNet)
@@ -54,11 +54,33 @@ export async function initFallDetector(): Promise<void> {
   try {
     console.log('🤖 Loading MoveNet model...');
 
+    // DEBUG: Test altri moduli nativi
+    console.log('🔍 RNFS type:', typeof RNFS);
+    console.log('🔍 RNFS.MainBundlePath:', RNFS.MainBundlePath);
+
+    // DEBUG: Verifica che TensorflowModel sia disponibile
+    console.log('🔍 TensorflowModel type:', typeof TensorflowModel);
+    console.log('🔍 TensorflowModel:', TensorflowModel);
+    console.log('🔍 TensorflowModel keys:', TensorflowModel ? Object.keys(TensorflowModel) : 'undefined');
+
+    if (!TensorflowModel || typeof TensorflowModel.loadFromFile !== 'function') {
+      throw new Error(
+        'TensorFlow Lite native module not loaded correctly.\n' +
+        'Try:\n' +
+        '1. Clean build (Cmd+Shift+K in Xcode)\n' +
+        '2. Rebuild (Cmd+B)\n' +
+        '3. Restart Metro with --reset-cache'
+      );
+    }
+
     // Percorso del modello nel bundle
     const modelPath = `${RNFS.MainBundlePath}/${MODEL_PATH}`;
+    console.log('🔍 Model path:', modelPath);
 
     // Verifica che il file esista
     const exists = await RNFS.exists(modelPath);
+    console.log('🔍 Model file exists:', exists);
+
     if (!exists) {
       throw new Error(
         `Model file not found: ${modelPath}\n\n` +

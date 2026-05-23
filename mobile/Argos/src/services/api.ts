@@ -115,7 +115,7 @@ export async function registerCamera(data: {
   module_type: string;
   status: string;
 }> {
-  const response = await apiFetch('/api/v1/cameras', {
+  const response = await apiFetch('/api/v1/cameras/', {
     method: 'POST',
     body: JSON.stringify({
       ...data,
@@ -138,8 +138,24 @@ export async function getCameras(): Promise<Array<{
   status: string;
   last_seen: string;
 }>> {
-  const response = await apiFetch('/api/v1/cameras');
+  const response = await apiFetch('/api/v1/cameras/');
   return await response.json();
+}
+
+/**
+ * CAMERAS - Aggiorna camera
+ */
+export async function updateCamera(
+  cameraId: string,
+  data: {
+    name?: string;
+    default_quality?: '360p' | '720p' | '1080p';
+  }
+): Promise<void> {
+  await apiFetch(`/api/v1/cameras/${cameraId}/`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 }
 
 /**

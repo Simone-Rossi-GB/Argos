@@ -61,7 +61,12 @@ export async function startStreaming(quality: '360p' | '720p' | '1080p'): Promis
       throw new Error('Missing camera_id or server_url in storage');
     }
 
-    console.log(`📹 Starting WebRTC stream at ${quality} to ${serverUrl}:8889/${cameraId}`);
+    // Pulisci serverUrl (rimuovi http:// e porta)
+    const cleanUrl = serverUrl
+      .replace(/^https?:\/\//, '')
+      .replace(/:\d+$/, '');
+
+    console.log(`📹 Starting WebRTC stream at ${quality} to ${cleanUrl}:8889/${cameraId}`);
 
     currentQuality = quality;
     const constraints = QUALITY_CONSTRAINTS[quality];
@@ -108,7 +113,7 @@ export async function startStreaming(quality: '360p' | '720p' | '1080p'): Promis
     await peerConnection.setLocalDescription(offer);
 
     // 6. NEGOZIA CON MEDIAMTX (WHIP PROTOCOL)
-    const whipUrl = `http://${serverUrl}:8889/${cameraId}/whip`;
+    const whipUrl = `http://${cleanUrl}:8889/${cameraId}/whip`;
     const response = await fetch(whipUrl, {
       method: 'POST',
       headers: {
